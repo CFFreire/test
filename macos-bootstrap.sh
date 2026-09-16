@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 echo "=================================================="
-echo "  macOS Development Workstation Bootstrap"
+echo "     macOS Development Workstation Bootstrap"
 echo "=================================================="
 
 # ============================================================
@@ -16,7 +16,6 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
 fi
 
 ARCH="$(uname -m)"
-
 echo "Arquitectura: $ARCH"
 
 # ============================================================
@@ -27,12 +26,10 @@ echo
 echo ">>> Homebrew"
 
 if ! command -v brew >/dev/null 2>&1; then
-
     echo "Instalando Homebrew..."
 
     /bin/bash -c \
       "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
 fi
 
 # Apple Silicon
@@ -40,38 +37,23 @@ if [[ -x /opt/homebrew/bin/brew ]]; then
 
     eval "$(/opt/homebrew/bin/brew shellenv)"
 
-    # Agregar permanentemente al PATH
-    if ! grep -q '/opt/homebrew/bin/brew shellenv' "$HOME/.zprofile" 2>/dev/null; then
+    if ! grep -q '/opt/homebrew/bin/brew shellenv' \
+        "$HOME/.zprofile" 2>/dev/null; then
 
         echo >> "$HOME/.zprofile"
-        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
-
+        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' \
+            >> "$HOME/.zprofile"
     fi
 
 # Intel
 elif [[ -x /usr/local/bin/brew ]]; then
-
     eval "$(/usr/local/bin/brew shellenv)"
-
 fi
 
 brew update
 
 # ============================================================
-# 2. HASHICORP TAP
-# ============================================================
-
-echo
-echo ">>> HashiCorp"
-
-brew tap hashicorp/tap
-
-# Homebrew 6+ requiere confiar explícitamente en fórmulas
-# provenientes de taps externos.
-brew trust --formula hashicorp/tap/terraform
-
-# ============================================================
-# 3. BREWFILE TEMPORAL
+# 2. BREWFILE TEMPORAL
 # ============================================================
 
 echo
@@ -88,7 +70,7 @@ trap cleanup EXIT
 cat > "$BREWFILE" <<'EOF'
 
 # ============================================================
-# CLI BASE
+# CLI / BASE
 # ============================================================
 
 brew "git"
@@ -134,9 +116,6 @@ brew "gradle"
 # ============================================================
 
 brew "awscli"
-
-brew "hashicorp/tap/terraform"
-
 brew "kubectl"
 brew "helm"
 
@@ -148,7 +127,7 @@ brew "openssl@3"
 brew "coreutils"
 
 # ============================================================
-# GUI
+# APLICACIONES
 # ============================================================
 
 cask "visual-studio-code"
@@ -166,7 +145,7 @@ EOF
 brew bundle --file="$BREWFILE"
 
 # ============================================================
-# 4. NVM
+# 3. NVM
 # ============================================================
 
 echo
@@ -176,7 +155,8 @@ mkdir -p "$HOME/.nvm"
 
 NVM_PREFIX="$(brew --prefix nvm)"
 
-if ! grep -q 'NVM_DIR="$HOME/.nvm"' "$HOME/.zshrc" 2>/dev/null; then
+if ! grep -q 'NVM_DIR="$HOME/.nvm"' \
+    "$HOME/.zshrc" 2>/dev/null; then
 
 cat >> "$HOME/.zshrc" <<EOF
 
@@ -189,9 +169,6 @@ export NVM_DIR="\$HOME/.nvm"
 [ -s "$NVM_PREFIX/nvm.sh" ] && \
     \. "$NVM_PREFIX/nvm.sh"
 
-[ -s "$NVM_PREFIX/etc/bash_completion.d/nvm" ] && \
-    \. "$NVM_PREFIX/etc/bash_completion.d/nvm"
-
 EOF
 
 fi
@@ -202,27 +179,26 @@ export NVM_DIR="$HOME/.nvm"
 source "$NVM_PREFIX/nvm.sh"
 
 # ============================================================
-# 5. NODE LTS
+# 4. NODE LTS + NPM
 # ============================================================
 
 echo
 echo ">>> Node.js LTS"
 
 nvm install --lts
-
 nvm alias default 'lts/*'
-
 nvm use default
 
 echo
 echo "Node:"
 node --version
 
+echo
 echo "npm:"
 npm --version
 
 # ============================================================
-# 6. PNPM
+# 5. PNPM
 # ============================================================
 
 echo
@@ -231,7 +207,7 @@ echo ">>> pnpm"
 npm install -g pnpm
 
 # ============================================================
-# 7. AI DEVELOPMENT TOOLS
+# 6. AI DEVELOPMENT TOOLS
 # ============================================================
 
 echo
@@ -245,76 +221,65 @@ echo ">>> OpenAI Codex"
 npm install -g @openai/codex
 
 # ============================================================
-# 8. PROJECT DIRECTORIES
+# 7. DIRECTORIOS DE PROYECTOS
 # ============================================================
 
 echo
-echo ">>> Creando directorios"
+echo ">>> Creando directorios de proyectos"
 
-mkdir -p "$HOME/Projects"
-
-mkdir -p "$HOME/Projects/personal"
-
-mkdir -p "$HOME/Projects/work"
-
-mkdir -p "$HOME/Projects/labs"
+mkdir -p \
+    "$HOME/Projects/personal" \
+    "$HOME/Projects/work" \
+    "$HOME/Projects/labs"
 
 # ============================================================
-# 9. SSH
+# 8. SSH
 # ============================================================
 
 echo
-echo ">>> SSH"
+echo ">>> Configurando estructura SSH"
 
 mkdir -p "$HOME/.ssh"
 
 chmod 700 "$HOME/.ssh"
 
 if [[ ! -f "$HOME/.ssh/config" ]]; then
-
     touch "$HOME/.ssh/config"
-
 fi
 
 chmod 600 "$HOME/.ssh/config"
 
 # IMPORTANTE:
-# No generamos ni sobrescribimos claves automáticamente.
-# Las cuentas GitHub se pueden configurar posteriormente.
+# No generamos ni sobrescribimos claves SSH.
+# Esto evita destruir configuraciones existentes.
 
 # ============================================================
-# 10. GIT
+# 9. GIT
 # ============================================================
 
 echo
-echo ">>> Git"
+echo ">>> Configuración base de Git"
 
 git config --global init.defaultBranch main
-
 git config --global core.autocrlf input
-
 git config --global pull.rebase false
-
 git config --global fetch.prune true
-
 git config --global push.autoSetupRemote true
 
 # ============================================================
-# 11. VS CODE
+# 10. VS CODE
 # ============================================================
 
 echo
 echo ">>> VS Code extensions"
 
-# Asegurar disponibilidad del comando "code"
-if [[ -x "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" ]]; then
+if [[ -x \
+"/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" ]]; then
 
     CODE_BIN="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
 
 else
-
     CODE_BIN="$(command -v code || true)"
-
 fi
 
 if [[ -n "$CODE_BIN" ]]; then
@@ -334,9 +299,6 @@ if [[ -n "$CODE_BIN" ]]; then
         # Docker
         "ms-azuretools.vscode-docker"
 
-        # Terraform
-        "hashicorp.terraform"
-
         # YAML
         "redhat.vscode-yaml"
 
@@ -345,7 +307,6 @@ if [[ -n "$CODE_BIN" ]]; then
 
         # Dev Containers
         "ms-vscode-remote.remote-containers"
-
     )
 
     for extension in "${EXTENSIONS[@]}"; do
@@ -360,18 +321,19 @@ if [[ -n "$CODE_BIN" ]]; then
 
 else
 
-    echo "WARNING: comando VS Code no encontrado."
+    echo "WARNING: VS Code CLI no encontrado."
 
 fi
 
 # ============================================================
-# 12. SHELL ALIASES
+# 11. ALIASES
 # ============================================================
 
 echo
-echo ">>> Shell aliases"
+echo ">>> Configurando aliases"
 
-if ! grep -q '# DEV MACHINE ALIASES' "$HOME/.zshrc" 2>/dev/null; then
+if ! grep -q '# DEV MACHINE ALIASES' \
+    "$HOME/.zshrc" 2>/dev/null; then
 
 cat >> "$HOME/.zshrc" <<'EOF'
 
@@ -380,18 +342,16 @@ cat >> "$HOME/.zshrc" <<'EOF'
 # DEV MACHINE ALIASES
 # ============================================================
 
+# General
+
 alias ll='ls -lah'
 
 # Git
 
 alias gs='git status'
-
 alias ga='git add'
-
 alias gc='git commit'
-
 alias gp='git pull'
-
 alias gps='git push'
 
 alias gl='git log --oneline --graph --decorate'
@@ -399,7 +359,6 @@ alias gl='git log --oneline --graph --decorate'
 # Docker
 
 alias d='docker'
-
 alias dc='docker compose'
 
 # Kubernetes
@@ -409,11 +368,8 @@ alias k='kubectl'
 # Projects
 
 alias projects='cd ~/Projects'
-
 alias personal='cd ~/Projects/personal'
-
 alias work='cd ~/Projects/work'
-
 alias labs='cd ~/Projects/labs'
 
 EOF
@@ -421,15 +377,44 @@ EOF
 fi
 
 # ============================================================
+# 12. JAVA PATH
+# ============================================================
+
+echo
+echo ">>> Configurando Java"
+
+JAVA_PREFIX="$(brew --prefix openjdk)"
+
+if ! grep -q "$JAVA_PREFIX/bin" \
+    "$HOME/.zshrc" 2>/dev/null; then
+
+cat >> "$HOME/.zshrc" <<EOF
+
+
+# ============================================================
+# JAVA
+# ============================================================
+
+export PATH="$JAVA_PREFIX/bin:\$PATH"
+
+EOF
+
+fi
+
+export PATH="$JAVA_PREFIX/bin:$PATH"
+
+# ============================================================
 # 13. FZF
 # ============================================================
 
 echo
-echo ">>> fzf"
+echo ">>> Configurando fzf"
 
-if [[ -f "$(brew --prefix)/opt/fzf/install" ]]; then
+FZF_INSTALL="$(brew --prefix)/opt/fzf/install"
 
-    "$(brew --prefix)/opt/fzf/install" \
+if [[ -f "$FZF_INSTALL" ]]; then
+
+    "$FZF_INSTALL" \
         --key-bindings \
         --completion \
         --no-update-rc || true
@@ -442,59 +427,47 @@ fi
 
 echo
 echo "=================================================="
-echo " Verificando instalación"
+echo "              VERIFICACIÓN"
 echo "=================================================="
 
 verify() {
 
-    local command="$1"
+    local cmd="$1"
 
-    if command -v "$command" >/dev/null 2>&1; then
+    if command -v "$cmd" >/dev/null 2>&1; then
 
-        printf "  %-15s OK\n" "$command"
+        printf "  %-15s OK\n" "$cmd"
 
     else
 
-        printf "  %-15s MISSING\n" "$command"
+        printf "  %-15s MISSING\n" "$cmd"
 
     fi
-
 }
 
 verify brew
-
 verify git
-
 verify gh
 
 verify node
-
 verify npm
-
 verify pnpm
 
 verify python3
-
 verify pipx
 
 verify java
-
 verify mvn
-
 verify gradle
 
 verify aws
 
-verify terraform
-
 verify kubectl
-
 verify helm
 
 verify docker
 
 verify claude
-
 verify codex
 
 # ============================================================
@@ -503,24 +476,22 @@ verify codex
 
 echo
 echo "=================================================="
-echo " Versiones principales"
+echo "          VERSIONES PRINCIPALES"
 echo "=================================================="
 
 git --version || true
 
 node --version || true
-
 npm --version || true
-
 pnpm --version || true
 
 python3 --version || true
 
 java --version || true
+mvn --version || true
+gradle --version || true
 
 aws --version || true
-
-terraform version || true
 
 kubectl version --client || true
 
@@ -531,38 +502,65 @@ claude --version || true
 codex --version || true
 
 # ============================================================
-# FINAL
+# 16. RESULTADO
 # ============================================================
 
 echo
 echo "=================================================="
-echo "        DEVELOPMENT MACHINE READY"
+echo "       DEVELOPMENT MACHINE READY"
 echo "=================================================="
-echo
 
+echo
 echo "Directorios:"
 echo
-echo "  ~/Projects/personal"
-echo "  ~/Projects/work"
-echo "  ~/Projects/labs"
-echo
+echo "  ~/Projects/"
+echo "      personal/"
+echo "      work/"
+echo "      labs/"
 
-echo "Pendiente de configuración personal:"
 echo
-echo "  1. GitHub / SSH multi-cuenta"
-echo "  2. gh auth login"
-echo "  3. aws configure / AWS SSO"
-echo "  4. Claude authentication"
-echo "  5. Codex authentication"
+echo "Herramientas principales:"
 echo
+echo "  Git / GitHub CLI"
+echo "  Node LTS / npm / pnpm"
+echo "  Python / pipx"
+echo "  Java / Maven / Gradle"
+echo "  AWS CLI"
+echo "  kubectl / Helm"
+echo "  Docker Desktop"
+echo "  VS Code"
+echo "  Claude Code"
+echo "  OpenAI Codex"
+echo "  ChatGPT"
+echo "  Chrome"
+echo "  iTerm2"
 
+echo
+echo "Pendiente de autenticación:"
+echo
+echo "  GitHub:"
+echo "      gh auth login"
+echo
+echo "  AWS:"
+echo "      aws configure"
+echo "      o configurar AWS SSO"
+echo
+echo "  Claude:"
+echo "      claude"
+echo
+echo "  Codex:"
+echo "      codex"
+
+echo
 echo "IMPORTANTE:"
 echo
-echo "Abre Docker Desktop una vez para completar su configuración."
+echo "  Abre Docker Desktop una vez para completar"
+echo "  su configuración inicial."
 echo
 echo "Después ejecuta:"
 echo
 echo "  source ~/.zshrc"
-echo
 
+echo
 echo "Bootstrap terminado."
+echo
