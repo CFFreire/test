@@ -66,6 +66,10 @@ echo ">>> HashiCorp"
 
 brew tap hashicorp/tap
 
+# Homebrew 6+ requiere confiar explícitamente en fórmulas
+# provenientes de taps externos.
+brew trust --formula hashicorp/tap/terraform
+
 # ============================================================
 # 3. BREWFILE TEMPORAL
 # ============================================================
