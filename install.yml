@@ -18,9 +18,9 @@ autoinstall:
     hostname: develop
     username: carlos
 
-    # Generar en Mac con:
+    # Generar en Mac con: Passw0rd
     # openssl passwd -6
-    password: "$6$REEMPLAZAR_CON_HASH"
+    password: '$6$FD4HisWoJBgeTeS1$N1lFR0OMQpqpJuvl.QfpH3vYLRgNikOaAMG/65P3c7fWk183LrBgYFzN.uqy68IMRBB7n78UcQ9JHYSTufjzZ/'
 
   # ==========================================================
   # SSH
